@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as mobilenet from '@tensorflow-models/mobilenet';
-import cat from './cat.png';
 
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { predictions: [] }
+    this.state = { image: undefined, predictions: [] }
     this.classify = this.classify.bind(this)
+    this.onUpload = this.onUpload.bind(this)
   }
 
   async classify() {
@@ -14,15 +14,23 @@ class App extends Component {
     const model = await mobilenet.load();
 
     // Classify the image.
-    const predictions = await model.classify(this.refs.cat);
+    const predictions = await model.classify(this.refs.image);
 
     this.setState({ predictions })
+  }
+
+  onUpload(e) {
+    const files = e.target.files
+    const image = URL.createObjectURL(files[0])
+    console.log(files[0])
+    this.setState({ image })
   }
 
   render() {
     return (
       <div>
-        <img src={cat} ref='cat' className='image' />
+        <input type='file' id='upload' onChange={this.onUpload} />
+        <img src={this.state.image} ref='image' className='image' />
 
         {this.state.predictions.map((prediction, i) => {
           const { className, probability } = prediction

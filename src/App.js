@@ -1,43 +1,49 @@
 import React, { Component } from 'react';
-import * as mobilenet from '@tensorflow-models/mobilenet';
+import * as tf from '@tensorflow/tfjs';
 
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { image: undefined, predictions: [] }
-    this.classify = this.classify.bind(this)
-    this.onUpload = this.onUpload.bind(this)
+    this.state = { image: undefined, input: undefined }
+    this.generate = this.generate.bind(this)
   }
 
-  async classify() {
+  async generate() {
     // Load the model.
-    const model = await mobilenet.load();
+    const model = await tf.loadLayersModel('http://localhost:3000/mnist_model.json');
+
+    // input
+    const input = tf.randomNormal([1,10])
+    const inputValues = await input.data()
+    this.setState({ input: Array.prototype.slice.call(inputValues) })
 
     // Classify the image.
-    const predictions = await model.classify(this.refs.image);
+    const generated = await model.predict(input);
+    const reshapedGenerated = generated.reshape([28, 28])
+    let normalizedGenerated = reshapedGenerated.sub(-1)
+    normalizedGenerated = normalizedGenerated.div(2)
 
-    this.setState({ predictions })
-  }
-
-  onUpload(e) {
-    const files = e.target.files
-    const image = URL.createObjectURL(files[0])
-    console.log(files[0])
-    this.setState({ image })
+    const generatedImage = await tf.browser.toPixels(normalizedGenerated, this.refs.canvas);
   }
 
   render() {
+    const { input } = this.state
+    console.log(input)
     return (
       <div>
-        <input type='file' id='upload' onChange={this.onUpload} />
-        <img src={this.state.image} ref='image' className='image' />
+        <h1>Adversarial Autoencoder</h1>
+        <h2>Inputs</h2>
+        { input
+            ? input.map((value, i) => <p key={i}>{`${value.toString()}`}</p>)
+            : <div></div>
+        }
 
-        {this.state.predictions.map((prediction, i) => {
-          const { className, probability } = prediction
-          return (<p key={i}>{`Prediction: ${className} (${probability*100}%)`}</p>)
-        })}
+        <h2>Outputs</h2>
+        <canvas ref="canvas" className='canvas' />
 
-        <button onClick={this.classify}>Classify</button>
+        <div>
+          <button onClick={this.generate}>Generate</button>
+        </div>
       </div>
     );
   }

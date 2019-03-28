@@ -13,6 +13,11 @@ code {
     monospace;
 }
 
+.canvas {
+  height: 28px;
+  width: 28px;
+}
+
 .image {
   width: 500px;
 }

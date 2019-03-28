@@ -23,12 +23,11 @@ class App extends Component {
     let normalizedGenerated = reshapedGenerated.sub(-1)
     normalizedGenerated = normalizedGenerated.div(2)
 
-    const generatedImage = await tf.browser.toPixels(normalizedGenerated, this.refs.canvas);
+    await tf.browser.toPixels(normalizedGenerated, this.refs.canvas);
   }
 
   render() {
     const { input } = this.state
-    console.log(input)
     return (
       <div>
         <h1>Adversarial Autoencoder</h1>

@@ -4,8 +4,9 @@ import * as tf from '@tensorflow/tfjs';
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { image: undefined, input: undefined }
+    this.state = { hash: undefined, image: undefined, input: undefined, seed: undefined }
     this.generate = this.generate.bind(this)
+    this.handleUpload = this.handleUpload.bind(this)
   }
 
   async generate() {
@@ -13,9 +14,22 @@ class App extends Component {
     const model = await tf.loadLayersModel('http://localhost:3000/mnist_model.json');
 
     // input
-    const input = tf.randomNormal([1,10])
+    let totalHash = 0
+    const splitHash = this.state.hash.split('-')
+    splitHash
+      .filter(i => i !== '-')
+      .forEach(i => {
+        const parsedInt = parseInt(i, 16)
+        totalHash =+ parsedInt
+      })
+
+    const input = tf.randomNormal([1,10], undefined, undefined, undefined, totalHash)
+    // const hashedInput = tf.matMul(input, floatHash)
     const inputValues = await input.data()
-    this.setState({ input: Array.prototype.slice.call(inputValues) })
+    // const hashedInputValues = await hashedInput.data()
+    // console.log(hashedInputValues)
+
+    this.setState({ input: Array.prototype.slice.call(inputValues), seed: totalHash })
 
     // Classify the image.
     const generated = await model.predict(input);
@@ -26,12 +40,26 @@ class App extends Component {
     await tf.browser.toPixels(normalizedGenerated, this.refs.canvas);
   }
 
+  handleUpload(e) {
+    const files = e.target.files
+    const image = URL.createObjectURL(files[0])
+    const hash = image.split('blob:http://localhost:3000/')[1]
+    this.setState({ hash })
+    this.generate()
+  }
+
   render() {
-    const { input } = this.state
+    const { input, seed } = this.state
     return (
       <div>
         <h1>Adversarial Autoencoder</h1>
-        <h2>Inputs</h2>
+        <h2>Upload</h2>
+        <input type='file' onChange={this.handleUpload} />
+
+        <h2>Seed</h2>
+        <p>{seed}</p>
+
+        <h2>Generated Inputs</h2>
         { input
             ? input.map((value, i) => <p key={i}>{`${value.toString()}`}</p>)
             : <div></div>
@@ -40,9 +68,9 @@ class App extends Component {
         <h2>Outputs</h2>
         <canvas ref="canvas" className='canvas' />
 
-        <div>
-          <button onClick={this.generate}>Generate</button>
-        </div>
+        {/*<div>*/}
+          {/*<button onClick={this.generate}>Generate</button>*/}
+        {/*</div>*/}
       </div>
     );
   }

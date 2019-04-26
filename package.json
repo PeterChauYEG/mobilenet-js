@@ -14,7 +14,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "convert": "tensorflowjs_converter --input_format keras public/aae_generator.h5 public"
+    "convert:generator": "tensorflowjs_converter --input_format keras public/aae_generator.h5 public/generator",
+    "convert:discriminator": "tensorflowjs_converter --input_format keras public/aae_discriminator.h5 public/discriminator"
   },
   "eslintConfig": {
     "extends": "react-app"

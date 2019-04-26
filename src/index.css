@@ -18,6 +18,11 @@ code {
   width: 112px;
 }
 
+.preprocessedCanvas {
+  height: 10px;
+  width: 100px;
+}
+
 .image {
   width: 500px;
 }

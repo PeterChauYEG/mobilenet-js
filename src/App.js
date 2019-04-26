@@ -11,16 +11,21 @@ class App extends Component {
 
   async generate() {
     // Load the model.
-    const model = await tf.loadLayersModel('http://localhost:3000/mnist_model.json');
+    const generator = await tf.loadLayersModel('http://localhost:3000/generator/model.json');
+    // const discriminator = await tf.loadLayersModel('http://localhost:3000/discriminator/model.json');
 
     // input
     const input = tf.browser.fromPixels(this.refs.image).asType('float32')
-    const resizedInput = tf.image.resizeNearestNeighbor(input, [28, 28])
-    console.log(resizedInput)
+    const resizedInput = tf.image.resizeNearestNeighbor(input, [1, 10]).div(255)
+    const grayScaledInput = tf.mean(resizedInput, 2, )
+
+    await tf.browser.toPixels(grayScaledInput, this.refs.inputCanvas);
+
 
     // Classify the image.
-    const generated = await model.predict(resizedInput);
-    const reshapedGenerated = generated.reshape([28, 28])
+    // const encoded = await discriminator.predict(resizedInput);
+    const decoded = await generator.predict(grayScaledInput);
+    const reshapedGenerated = decoded.reshape([28, 28])
     let normalizedGenerated = reshapedGenerated.sub(-1)
     normalizedGenerated = normalizedGenerated.div(2)
 
@@ -42,11 +47,8 @@ class App extends Component {
         <input type='file' onChange={this.handleUpload} />
         <img src={image} ref='image' className='image' />
 
-        <h2>Generated Inputs</h2>
-        { input
-            ? input.map((value, i) => <p key={i}>{`${value.toString()}`}</p>)
-            : <div></div>
-        }
+        <h2>Preprocessed Inputs</h2>
+        <canvas ref="inputCanvas" className='preprocessedCanvas' />
 
         <h2>Outputs</h2>
         <canvas ref="canvas" className='canvas' />

@@ -12,7 +12,6 @@ class App extends Component {
   async generate() {
     // Load the model.
     const generator = await tf.loadLayersModel('http://localhost:3000/generator/model.json');
-    // const discriminator = await tf.loadLayersModel('http://localhost:3000/discriminator/model.json');
 
     // input
     const input = tf.browser.fromPixels(this.refs.image).asType('float32')
@@ -23,7 +22,6 @@ class App extends Component {
 
 
     // Classify the image.
-    // const encoded = await discriminator.predict(resizedInput);
     const decoded = await generator.predict(grayScaledInput);
     const reshapedGenerated = decoded.reshape([28, 28])
     let normalizedGenerated = reshapedGenerated.sub(-1)
